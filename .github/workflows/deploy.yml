@@ -1,0 +1,60 @@
+name: CI/CD Pipeline - Innovatech EKS
+
+on:
+  push:
+    branches: [deploy]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push back-despachos
+        uses: docker/build-push-action@v5
+        with:
+          context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+          push: true
+          tags: gustavodev2026/back-despachos:eks-v1
+
+      - name: Build and Push back-ventas
+        uses: docker/build-push-action@v5
+        with:
+          context: ./back-Ventas_SpringBoot/Springboot-API-REST
+          push: true
+          tags: gustavodev2026/back-ventas:eks-v1
+
+      - name: Build and Push front-despacho
+        uses: docker/build-push-action@v5
+        with:
+          context: ./front_despacho
+          push: true
+          tags: gustavodev2026/front-despacho:eks-v1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name innovatech-eks
+
+      - name: Deploy to EKS
+        run: |
+          kubectl rollout restart deployment/back-despachos -n innovatech
+          kubectl rollout restart deployment/back-ventas -n innovatech
+          kubectl rollout restart deployment/front-despacho -n innovatech
+          kubectl rollout status deployment/back-despachos -n innovatech
+          kubectl rollout status deployment/back-ventas -n innovatech
+          kubectl rollout status deployment/front-despacho -n innovatech

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-despacho
+  namespace: innovatech
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front-despacho
+  template:
+    metadata:
+      labels:
+        app: front-despacho
+    spec:
+      containers:
+      - name: front-despacho
+        image: gustavodev2026/front-despacho:eks-v1
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        env:
+        - name: VITE_API_URL
+          value: "http://back-despachos:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-despacho
+  namespace: innovatech
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+spec:
+  selector:
+    app: front-despacho
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer
