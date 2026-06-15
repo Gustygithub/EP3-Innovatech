@@ -20,14 +20,14 @@ jobs:
       - name: Build and Push back-despachos
         uses: docker/build-push-action@v5
         with:
-          context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+          context: ./back-Despachos_SpringBoot
           push: true
           tags: gustavodev2026/back-despachos:eks-v1
 
       - name: Build and Push back-ventas
         uses: docker/build-push-action@v5
         with:
-          context: ./back-Ventas_SpringBoot/Springboot-API-REST
+          context: ./back-Ventas_SpringBoot
           push: true
           tags: gustavodev2026/back-ventas:eks-v1
 
